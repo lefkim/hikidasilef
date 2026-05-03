@@ -14,19 +14,26 @@
       --text: #111111;
       --muted: #888888;
       --faint: #DDDDDD;
-      --accent: #8B6914;
+      --east: #8B6914;
+      --west: #1A1A5C;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'IBM Plex Mono', monospace; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 13px; }
 
-    .header { max-width: 680px; margin: 0 auto; padding: 3rem 2rem 0; }
+    .header { max-width: 720px; margin: 0 auto; padding: 3rem 2rem 0; }
     .back { font-size: 10px; color: var(--muted); text-decoration: none; letter-spacing: 1px; text-transform: uppercase; display: inline-block; margin-bottom: 1.5rem; }
     .back:hover { color: var(--text); }
-    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; letter-spacing: 3px; line-height: 1; margin-bottom: 0.25rem; }
-    .logo-accent { color: var(--accent); }
-    .count-line { font-size: 10px; color: var(--muted); margin-bottom: 2rem; letter-spacing: 0.5px; }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; letter-spacing: 3px; line-height: 1; margin-bottom: 2rem; }
 
-    main { max-width: 680px; margin: 0 auto; padding: 0 2rem 5rem; }
+    .region-tabs { display: flex; gap: 2px; margin-bottom: 2rem; }
+    .region-tab { flex: 1; padding: 9px; border: 1px solid var(--border); border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); cursor: pointer; text-align: center; transition: all 0.1s; letter-spacing: 1px; text-transform: uppercase; background: var(--bg); }
+    .region-tab.active.east { color: var(--east); border-color: var(--east); }
+    .region-tab.active.west { color: var(--west); border-color: var(--west); }
+    .region-tab.active.theme { color: var(--text); border-color: var(--text); }
+
+    main { max-width: 720px; margin: 0 auto; padding: 0 2rem 5rem; }
+    .panel { display: none; }
+    .panel.active { display: block; }
 
     .view-tabs { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
     .view-tab { padding: 0 0 10px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); background: none; border: none; border-bottom: 1.5px solid transparent; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; margin-bottom: -1px; transition: all 0.1s; }
@@ -35,110 +42,221 @@
     .view { display: none; padding-top: 1.25rem; }
     .view.active { display: block; }
 
-    .card { background: var(--bg); border: 1px solid var(--border); border-radius: 2px; padding: 1.25rem; margin-bottom: 8px; }
-    .field-label { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+    /* 국가 탭 (동양만) */
+    .country-tabs { display: flex; gap: 6px; margin-bottom: 1rem; }
+    .country-tab { padding: 5px 14px; border: 1px solid var(--border); border-radius: 99px; font-size: 11px; color: var(--muted); background: transparent; cursor: pointer; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; transition: all 0.1s; }
+    .country-tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
 
-    input[type=text], textarea {
+    /* 검색 */
+    .search-bar { margin-bottom: 10px; }
+    .search-bar input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; background: var(--surface); color: var(--text); outline: none; }
+    .search-bar input:focus { border-color: var(--border-dark); }
+    .search-bar input::placeholder { color: var(--faint); }
+
+    /* 키워드 필터 */
+    .tag-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; min-height: 10px; }
+    .tag-filter { padding: 3px 10px; border: 1px solid var(--border); border-radius: 99px; font-size: 10px; color: var(--muted); background: transparent; cursor: pointer; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; transition: all 0.1s; }
+    .tag-filter.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .tag-more-btn { padding: 3px 10px; border: 1px solid var(--border); border-radius: 99px; font-size: 10px; color: var(--muted); background: transparent; cursor: pointer; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; transition: all 0.1s; }
+    .tag-more-btn:hover { border-color: var(--border-dark); color: var(--text); }
+
+    /* 연표 */
+    .timeline { position: relative; }
+    .timeline::before { content: ''; position: absolute; left: 72px; top: 0; bottom: 0; width: 1px; background: var(--border); }
+
+    .entry { display: flex; position: relative; }
+    .entry-year { width: 72px; flex-shrink: 0; padding: 14px 14px 14px 0; text-align: right; }
+    .year-text { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 1px; line-height: 1.2; }
+    .year-text.east { color: var(--east); }
+    .year-text.west { color: var(--west); }
+    .entry-dot { width: 14px; flex-shrink: 0; display: flex; align-items: flex-start; padding-top: 18px; }
+    .entry-dot::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--text); flex-shrink: 0; border: 1.5px solid var(--bg); outline: 1px solid var(--border-dark); }
+    .entry-body { flex: 1; padding: 12px 0 12px 12px; border-bottom: 1px solid var(--border); }
+    .entry:last-child .entry-body { border-bottom: none; }
+    .entry-event { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 4px; }
+    .entry-memo { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 4px; }
+    .entry-ref { font-size: 11px; color: var(--faint); margin-bottom: 6px; font-style: italic; }
+    .entry-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+    .entry-tag { font-size: 9px; padding: 2px 8px; border: 1px solid var(--faint); border-radius: 99px; color: var(--muted); }
+    .entry-actions { display: flex; gap: 10px; }
+    .entry-btn { font-size: 10px; color: var(--faint); background: none; border: none; cursor: pointer; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; padding: 0; text-transform: uppercase; }
+    .entry-btn:hover { color: var(--text); }
+
+    /* 입력 폼 */
+    .card { background: var(--bg); border: 1px solid var(--border); border-radius: 2px; padding: 1.25rem; margin-bottom: 8px; }
+    .field-label { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+    input[type=text], textarea, select {
       width: 100%; padding: 10px 12px;
       border: 1px solid var(--border); border-radius: 2px;
       font-family: 'IBM Plex Mono', monospace; font-size: 13px;
       background: var(--surface); color: var(--text);
-      outline: none; transition: border-color 0.1s; margin-bottom: 6px;
+      outline: none; transition: border-color 0.1s; margin-bottom: 10px;
     }
-    input[type=text]:focus, textarea:focus { border-color: var(--border-dark); background: var(--bg); }
-    textarea { min-height: 70px; resize: vertical; }
+    input[type=text]:focus, textarea:focus, select:focus { border-color: var(--border-dark); background: var(--bg); }
     input[type=text]::placeholder, textarea::placeholder { color: var(--faint); }
-
-    .tag-input-wrap { margin-bottom: 6px; }
-    .tag-input-wrap input { margin-bottom: 4px; }
-    .tag-hint { font-size: 10px; color: var(--muted); margin-bottom: 10px; }
+    textarea { min-height: 70px; resize: vertical; }
+    .field-hint { font-size: 10px; color: var(--muted); margin-bottom: 10px; }
 
     .btn { width: 100%; padding: 10px; border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; cursor: pointer; transition: all 0.1s; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
     .btn-dark { background: var(--text); color: var(--bg); border: 1px solid var(--text); font-weight: 500; }
     .btn-dark:hover { opacity: 0.75; }
+    .btn-outline { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--border-dark); color: var(--text); }
 
-    /* 검색/필터 */
-    .search-bar { display: flex; gap: 6px; margin-bottom: 12px; }
-    .search-bar input { flex: 1; margin-bottom: 0; }
-    .search-bar input:focus { border-color: var(--border-dark); }
+    /* 테마 */
+    .theme-block { border: 1px solid var(--border); border-radius: 2px; margin-bottom: 8px; overflow: hidden; }
+    .theme-header { display: flex; align-items: center; padding: 12px 14px; cursor: pointer; background: var(--surface); gap: 10px; }
+    .theme-header:hover { background: var(--faint); }
+    .theme-title { flex: 1; font-size: 14px; font-weight: 500; }
+    .theme-count { font-size: 10px; color: var(--muted); }
+    .theme-arrow { font-size: 12px; color: var(--muted); transition: transform 0.15s; }
+    .theme-arrow.open { transform: rotate(90deg); }
+    .theme-body { display: none; border-top: 1px solid var(--border); }
+    .theme-body.open { display: block; }
+    .theme-del { font-size: 11px; color: var(--faint); background: none; border: none; cursor: pointer; }
+    .theme-del:hover { color: var(--text); }
 
-    .tag-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-    .tag-filter { padding: 4px 10px; border: 1px solid var(--border); border-radius: 99px; font-size: 10px; color: var(--muted); background: transparent; cursor: pointer; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; transition: all 0.1s; }
-    .tag-filter.active { background: var(--text); color: var(--bg); border-color: var(--text); }
-
-    /* 연표 */
-    .timeline { position: relative; }
-    .timeline::before { content: ''; position: absolute; left: 52px; top: 0; bottom: 0; width: 1px; background: var(--border); }
-
-    .entry { display: flex; gap: 0; margin-bottom: 0; position: relative; }
-    .entry-year { width: 52px; flex-shrink: 0; padding: 14px 12px 14px 0; text-align: right; }
-    .year-text { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 1px; color: var(--accent); line-height: 1; }
-    .entry-dot { width: 12px; flex-shrink: 0; display: flex; align-items: flex-start; padding-top: 17px; }
-    .entry-dot::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-left: 0; border: 1.5px solid var(--bg); outline: 1px solid var(--accent); }
-    .entry-body { flex: 1; padding: 12px 0 12px 14px; border-bottom: 1px solid var(--border); }
-    .entry:last-child .entry-body { border-bottom: none; }
-    .entry-event { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 4px; }
-    .entry-memo { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 6px; }
-    .entry-tags { display: flex; flex-wrap: wrap; gap: 4px; }
-    .entry-tag { font-size: 9px; padding: 2px 8px; border: 1px solid var(--faint); border-radius: 99px; color: var(--muted); letter-spacing: 0.5px; }
-    .entry-actions { display: flex; gap: 8px; margin-top: 6px; }
-    .entry-del { font-size: 10px; color: var(--faint); background: none; border: none; cursor: pointer; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; padding: 0; }
-    .entry-del:hover { color: var(--text); }
+    /* 테마 항목 선택 */
+    .entry-select-list { max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 2px; margin-bottom: 8px; }
+    .entry-select-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    .entry-select-item:last-child { border-bottom: none; }
+    .entry-select-item input { margin-top: 2px; flex-shrink: 0; accent-color: var(--text); }
+    .entry-select-label { font-size: 13px; line-height: 1.5; }
+    .entry-select-year { font-size: 10px; color: var(--muted); }
 
     .empty { font-size: 10px; color: var(--muted); text-align: center; padding: 3rem 0; letter-spacing: 1px; }
 
-    /* 삭제 모달 */
+    /* 모달 */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999; display: none; align-items: center; justify-content: center; }
     .modal-overlay.show { display: flex; }
-    .modal { background: var(--bg); border: 1px solid var(--border); border-radius: 2px; padding: 1.5rem; width: 280px; }
+    .modal { background: var(--bg); border: 1px solid var(--border); border-radius: 2px; padding: 1.5rem; width: 300px; }
     .modal-title { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
     .modal input { margin-bottom: 10px; }
     .modal-btns { display: flex; gap: 6px; }
     .modal-btns button { flex: 1; padding: 8px; border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; }
     .modal-cancel { border: 1px solid var(--border); background: transparent; color: var(--muted); }
     .modal-confirm { border: 1px solid var(--text); background: var(--text); color: var(--bg); }
+
+    @media (max-width: 480px) {
+      .header, main { padding-left: 1rem; padding-right: 1rem; }
+      .logo { font-size: 1.8rem; }
+    }
   </style>
 </head>
 <body>
 
 <div class="header">
   <a class="back" href="./index.html">← 서랍장으로</a>
-  <div class="logo">美術史<span class="logo-accent">の</span>引き出し</div>
-  <div class="count-line" id="count-line">0 entries</div>
+  <div class="logo">美術史の引き出し</div>
+
+  <div class="region-tabs">
+    <button class="region-tab active east" onclick="switchRegion('east', this)">東洋</button>
+    <button class="region-tab west" onclick="switchRegion('west', this)">西洋</button>
+    <button class="region-tab theme" onclick="switchRegion('theme', this)">テーマ</button>
+  </div>
 </div>
 
 <main>
-  <div class="view-tabs">
-    <button class="view-tab active" onclick="switchView('list', this)">연표</button>
-    <button class="view-tab" onclick="switchView('add', this)">+ add</button>
+
+  <!-- 동양 -->
+  <div class="panel active" id="panel-east">
+    <div class="view-tabs">
+      <button class="view-tab active" onclick="switchView('east','timeline',this)">연표</button>
+      <button class="view-tab" onclick="switchView('east','add',this)">+ add</button>
+    </div>
+
+    <div class="view active" id="east-timeline">
+      <div class="country-tabs" id="east-country-tabs">
+        <button class="country-tab active" onclick="switchCountry('east','all',this)">전체</button>
+        <button class="country-tab" onclick="switchCountry('east','china',this)">중국</button>
+        <button class="country-tab" onclick="switchCountry('east','korea',this)">한국</button>
+        <button class="country-tab" onclick="switchCountry('east','japan',this)">일본</button>
+      </div>
+      <div class="search-bar"><input type="text" id="east-search" placeholder="키워드 검색..." oninput="renderTimeline('east')" /></div>
+      <div class="tag-filters" id="east-tag-filters"></div>
+      <div class="timeline" id="east-timeline-list"><div class="empty">—</div></div>
+    </div>
+
+    <div class="view" id="east-add">
+      <div class="card">
+        <div class="field-label">국가</div>
+        <select id="east-country">
+          <option value="china">중국</option>
+          <option value="korea">한국</option>
+          <option value="japan">일본</option>
+          <option value="other">기타</option>
+        </select>
+        <div class="field-label">연도 / 시대</div>
+        <input type="text" id="east-year" placeholder="BC 221 / 14세기 / 1922" />
+        <div class="field-label">사건 / 내용</div>
+        <input type="text" id="east-event" placeholder="진시황, 문자 통일령 반포" />
+        <div class="field-label">메모</div>
+        <textarea id="east-memo" placeholder="맥락, 의미, 관련 내용..."></textarea>
+        <div class="field-label">출처</div>
+        <input type="text" id="east-ref" placeholder="강우방, 『한국미술의 탄생』, p.123" />
+        <div class="field-label">키워드 태그</div>
+        <input type="text" id="east-tags" placeholder="전서, 서예, 진나라" />
+        <div class="field-hint">쉼표로 구분</div>
+        <button class="btn btn-dark" id="east-submit-btn" onclick="submitEntry('east')">+ add</button>
+        <button class="btn btn-outline" id="east-cancel-edit" onclick="cancelEdit('east')" style="display:none;">cancel</button>
+      </div>
+    </div>
   </div>
 
-  <!-- 연표 -->
-  <div class="view active" id="view-list">
-    <div class="search-bar">
-      <input type="text" id="search-input" placeholder="키워드 검색..." oninput="renderTimeline()" />
+  <!-- 서양 -->
+  <div class="panel" id="panel-west">
+    <div class="view-tabs">
+      <button class="view-tab active" onclick="switchView('west','timeline',this)">연표</button>
+      <button class="view-tab" onclick="switchView('west','add',this)">+ add</button>
     </div>
-    <div class="tag-filters" id="tag-filters"></div>
-    <div class="timeline" id="timeline">
-      <div class="empty">—</div>
+
+    <div class="view active" id="west-timeline">
+      <div class="search-bar"><input type="text" id="west-search" placeholder="키워드 검색..." oninput="renderTimeline('west')" /></div>
+      <div class="tag-filters" id="west-tag-filters"></div>
+      <div class="timeline" id="west-timeline-list"><div class="empty">—</div></div>
+    </div>
+
+    <div class="view" id="west-add">
+      <div class="card">
+        <div class="field-label">연도 / 시대</div>
+        <input type="text" id="west-year" placeholder="15세기 / 1648 / 19세기 후반" />
+        <div class="field-label">사건 / 내용</div>
+        <input type="text" id="west-event" placeholder="네덜란드 황금시대 시작" />
+        <div class="field-label">메모</div>
+        <textarea id="west-memo" placeholder="맥락, 의미, 관련 내용..."></textarea>
+        <div class="field-label">출처</div>
+        <input type="text" id="west-ref" placeholder="곰브리치, 『서양미술사』, p.456" />
+        <div class="field-label">키워드 태그</div>
+        <input type="text" id="west-tags" placeholder="바로크, 네덜란드, 황금시대" />
+        <div class="field-hint">쉼표로 구분</div>
+        <button class="btn btn-dark" id="west-submit-btn" onclick="submitEntry('west')">+ add</button>
+        <button class="btn btn-outline" id="west-cancel-edit" onclick="cancelEdit('west')" style="display:none;">cancel</button>
+      </div>
     </div>
   </div>
 
-  <!-- 추가 -->
-  <div class="view" id="view-add">
-    <div class="card">
-      <div class="field-label">연도</div>
-      <input type="text" id="input-year" placeholder="1922" />
-      <div class="field-label">사건</div>
-      <input type="text" id="input-event" placeholder="조선미술전람회 개최" />
-      <div class="field-label">메모 (맥락/의미)</div>
-      <textarea id="input-memo" placeholder="&quot;동양화&quot;가 제도적 범주로 정착"></textarea>
-      <div class="field-label">키워드 태그</div>
-      <input type="text" id="input-tags" placeholder="제도, 용어, 인물" />
-      <div class="tag-hint">쉼표로 구분</div>
-      <button class="btn btn-dark" onclick="addEntry()">+ add</button>
+  <!-- 테마 -->
+  <div class="panel" id="panel-theme">
+    <div class="view-tabs">
+      <button class="view-tab active" onclick="switchView('theme','list',this)">테마 목록</button>
+      <button class="view-tab" onclick="switchView('theme','add',this)">+ 새 테마</button>
+    </div>
+
+    <div class="view active" id="theme-list">
+      <div id="theme-blocks"><div class="empty">—</div></div>
+    </div>
+
+    <div class="view" id="theme-add">
+      <div class="card">
+        <div class="field-label">테마 이름</div>
+        <input type="text" id="theme-name-input" placeholder="한국화 명칭의 역사" />
+        <div class="field-label">항목 선택 (동양 + 서양 전체)</div>
+        <div class="entry-select-list" id="theme-entry-select"><div class="empty">—</div></div>
+        <button class="btn btn-dark" onclick="saveTheme()">save theme</button>
+      </div>
     </div>
   </div>
+
 </main>
 
 <!-- 삭제 모달 -->
@@ -155,10 +273,9 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const DELETE_PASSWORD = "1204";
-
 const firebaseConfig = {
   apiKey: "AIzaSyDGR_H5irToWUMDmjpvgBxJCXHYmg5PUp8",
   authDomain: "lef-hikidashi.firebaseapp.com",
@@ -172,96 +289,197 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-let entries = [];
-let activeTag = null;
-let deleteTargetId = null;
+const state = {
+  entries: { east: {}, west: {} },
+  themes: {},
+  activeCountry: { east: 'all' },
+  activeTag: { east: null, west: null },
+  editingId: { east: null, west: null },
+  deleteTarget: null
+};
 
-onValue(ref(db, 'bijutsu'), snap => {
-  entries = [];
-  snap.forEach(child => {
-    entries.push({ id: child.key, ...child.val() });
-  });
-  entries.sort((a, b) => (a.year || '').localeCompare(b.year || ''));
-  renderTimeline();
-  renderTagFilters();
-  updateCount();
+// 기본 데이터 없음 — 직접 채워나가기
+
+// Firebase 동기화
+onValue(ref(db, 'bijutsu/east'), snap => {
+  state.entries.east = {};
+  snap.forEach(c => { state.entries.east[c.key] = { id: c.key, ...c.val() }; });
+  renderTimeline('east');
+  renderTagFilters('east');
+  renderThemeEntrySelect();
 });
 
-window.switchView = function(view, btn) {
-  document.querySelectorAll('.view-tab').forEach(b => b.classList.remove('active'));
+onValue(ref(db, 'bijutsu/west'), snap => {
+  state.entries.west = {};
+  snap.forEach(c => { state.entries.west[c.key] = { id: c.key, ...c.val() }; });
+  renderTimeline('west');
+  renderTagFilters('west');
+  renderThemeEntrySelect();
+});
+
+onValue(ref(db, 'bijutsu/themes'), snap => {
+  state.themes = {};
+  snap.forEach(c => { state.themes[c.key] = { id: c.key, ...c.val() }; });
+  renderThemes();
+});
+
+// 탭 전환
+window.switchRegion = function(region, btn) {
+  document.querySelectorAll('.region-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-' + view).classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + region).classList.add('active');
+  if (region === 'theme') renderThemeEntrySelect();
 };
 
-window.addEntry = function() {
-  const year = document.getElementById('input-year').value.trim();
-  const event = document.getElementById('input-event').value.trim();
-  const memo = document.getElementById('input-memo').value.trim();
-  const tagsRaw = document.getElementById('input-tags').value.trim();
-  if (!year || !event) { alert('연도와 사건은 필수예요.'); return; }
-  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
-  push(ref(db, 'bijutsu'), { year, event, memo, tags });
-  document.getElementById('input-year').value = '';
-  document.getElementById('input-event').value = '';
-  document.getElementById('input-memo').value = '';
-  document.getElementById('input-tags').value = '';
-  const listBtn = document.querySelector('.view-tab');
-  switchView('list', listBtn);
+window.switchView = function(region, view, btn) {
+  const panel = document.getElementById('panel-' + region);
+  panel.querySelectorAll('.view-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  panel.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(region + '-' + view).classList.add('active');
 };
 
-function renderTimeline() {
-  const el = document.getElementById('timeline');
-  const query = document.getElementById('search-input').value.toLowerCase();
+window.switchCountry = function(region, country, btn) {
+  state.activeCountry[region] = country;
+  document.querySelectorAll('#east-country-tabs .country-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTimeline(region);
+};
 
-  let filtered = entries.filter(e => {
-    const matchTag = !activeTag || (e.tags && e.tags.includes(activeTag));
-    const matchQuery = !query ||
-      (e.year && e.year.includes(query)) ||
+// 연표 렌더
+function renderTimeline(region) {
+  const el = document.getElementById(region + '-timeline-list');
+  const query = (document.getElementById(region + '-search')?.value || '').toLowerCase();
+  const activeTag = state.activeTag[region];
+  const activeCountry = state.activeCountry[region] || 'all';
+
+  let entries = Object.values(state.entries[region]);
+
+  if (region === 'east' && activeCountry !== 'all') {
+    entries = entries.filter(e => e.country === activeCountry);
+  }
+
+  if (activeTag) entries = entries.filter(e => e.tags && e.tags.includes(activeTag));
+
+  if (query) {
+    entries = entries.filter(e =>
+      (e.year && e.year.toLowerCase().includes(query)) ||
       (e.event && e.event.toLowerCase().includes(query)) ||
       (e.memo && e.memo.toLowerCase().includes(query)) ||
-      (e.tags && e.tags.some(t => t.toLowerCase().includes(query)));
-    return matchTag && matchQuery;
-  });
+      (e.tags && e.tags.some(t => t.toLowerCase().includes(query)))
+    );
+  }
 
-  if (!filtered.length) { el.innerHTML = '<div class="empty">—</div>'; return; }
+  function parseYear(y) {
+    if (!y) return 9999;
+    const s = y.toString().trim();
+    if (s.match(/^BC\s*(\d+)/i)) return -parseInt(s.match(/\d+/)[0]);
+    const centuryMatch = s.match(/(\d+)세기/);
+    if (centuryMatch) return (parseInt(centuryMatch[1]) - 1) * 100;
+    const numMatch = s.match(/^\d+/);
+    if (numMatch) return parseInt(numMatch[0]);
+    return 9999;
+  }
+  entries.sort((a, b) => parseYear(a.year) - parseYear(b.year));
 
-  el.innerHTML = filtered.map(e => `
+  if (!entries.length) { el.innerHTML = '<div class="empty">—</div>'; return; }
+
+  el.innerHTML = entries.map(e => `
     <div class="entry">
-      <div class="entry-year"><div class="year-text">${e.year}</div></div>
+      <div class="entry-year"><div class="year-text ${region}">${e.year || ''}</div>${e.country ? `<div style="font-size:9px;color:var(--muted);">${e.country === 'china' ? '중국' : e.country === 'korea' ? '한국' : e.country === 'japan' ? '일본' : ''}</div>` : ''}</div>
       <div class="entry-dot"></div>
       <div class="entry-body">
-        <div class="entry-event">${e.event}</div>
+        <div class="entry-event">${e.event || ''}</div>
         ${e.memo ? `<div class="entry-memo">${e.memo}</div>` : ''}
+        ${e.ref ? `<div class="entry-ref">📖 ${e.ref}</div>` : ''}
         ${e.tags && e.tags.length ? `<div class="entry-tags">${e.tags.map(t => `<span class="entry-tag">${t}</span>`).join('')}</div>` : ''}
         <div class="entry-actions">
-          <button class="entry-del" onclick="requestDelete('${e.id}')">× 삭제</button>
+          <button class="entry-btn" onclick="editEntry('${region}','${e.id}')">수정</button>
+          <button class="entry-btn" onclick="requestDelete('${region}','${e.id}')">삭제</button>
         </div>
       </div>
     </div>`).join('');
 }
 
-function renderTagFilters() {
+// 태그 필터
+function renderTagFilters(region, showAll) {
+  const entries = Object.values(state.entries[region]);
   const allTags = [...new Set(entries.flatMap(e => e.tags || []))].sort();
-  const el = document.getElementById('tag-filters');
+  const el = document.getElementById(region + '-tag-filters');
   if (!allTags.length) { el.innerHTML = ''; return; }
-  el.innerHTML = allTags.map(t =>
-    `<button class="tag-filter ${activeTag === t ? 'active' : ''}" onclick="filterByTag('${t}')">${t}</button>`
-  ).join('');
+  const limit = 5;
+  const visible = showAll ? allTags : allTags.slice(0, limit);
+  const moreBtnHtml = allTags.length > limit
+    ? `<button class="tag-more-btn" onclick="renderTagFilters('${region}', ${!showAll})">${showAll ? '접기' : `+${allTags.length - limit}개 더보기`}</button>`
+    : '';
+  el.innerHTML = visible.map(t =>
+    `<button class="tag-filter ${state.activeTag[region] === t ? 'active' : ''}" onclick="filterTag('${region}','${t}')">${t}</button>`
+  ).join('') + moreBtnHtml;
 }
 
-window.filterByTag = function(tag) {
-  activeTag = activeTag === tag ? null : tag;
-  renderTimeline();
-  renderTagFilters();
+window.filterTag = function(region, tag) {
+  state.activeTag[region] = state.activeTag[region] === tag ? null : tag;
+  renderTimeline(region);
+  renderTagFilters(region);
 };
 
-function updateCount() {
-  document.getElementById('count-line').textContent = entries.length + ' entries';
+// 항목 추가/수정
+window.submitEntry = function(region) {
+  const year = document.getElementById(region + '-year').value.trim();
+  const event = document.getElementById(region + '-event').value.trim();
+  const memo = document.getElementById(region + '-memo').value.trim();
+  const refVal = document.getElementById(region + '-ref').value.trim();
+  const tagsRaw = document.getElementById(region + '-tags').value.trim();
+  if (!year || !event) { alert('연도와 사건은 필수예요.'); return; }
+  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const data = { year, event, memo, ref: refVal, tags };
+  if (region === 'east') data.country = document.getElementById('east-country').value;
+
+  if (state.editingId[region]) {
+    update(ref(db, `bijutsu/${region}/${state.editingId[region]}`), data);
+    cancelEdit(region);
+  } else {
+    push(ref(db, `bijutsu/${region}`), data);
+  }
+  clearForm(region);
+  const timelineBtn = document.querySelector(`#panel-${region} .view-tab`);
+  switchView(region, 'timeline', timelineBtn);
+};
+
+window.editEntry = function(region, id) {
+  const e = state.entries[region][id];
+  if (!e) return;
+  state.editingId[region] = id;
+  document.getElementById(region + '-year').value = e.year || '';
+  document.getElementById(region + '-event').value = e.event || '';
+  document.getElementById(region + '-memo').value = e.memo || '';
+  document.getElementById(region + '-ref').value = e.ref || '';
+  document.getElementById(region + '-tags').value = (e.tags || []).join(', ');
+  if (region === 'east' && e.country) document.getElementById('east-country').value = e.country;
+  document.getElementById(region + '-submit-btn').textContent = 'update';
+  document.getElementById(region + '-cancel-edit').style.display = 'block';
+  const addBtn = document.querySelector(`#panel-${region} .view-tab:nth-child(2)`);
+  switchView(region, 'add', addBtn);
+};
+
+window.cancelEdit = function(region) {
+  state.editingId[region] = null;
+  clearForm(region);
+  document.getElementById(region + '-submit-btn').textContent = '+ add';
+  document.getElementById(region + '-cancel-edit').style.display = 'none';
+};
+
+function clearForm(region) {
+  ['year','event','memo','ref','tags'].forEach(f => {
+    const el = document.getElementById(region + '-' + f);
+    if (el) el.value = '';
+  });
 }
 
-window.requestDelete = function(id) {
-  deleteTargetId = id;
+// 삭제
+window.requestDelete = function(region, id) {
+  state.deleteTarget = { region, id };
   document.getElementById('delete-pw').value = '';
   document.getElementById('delete-modal').classList.add('show');
   setTimeout(() => document.getElementById('delete-pw').focus(), 100);
@@ -269,13 +487,14 @@ window.requestDelete = function(id) {
 
 window.closeModal = function() {
   document.getElementById('delete-modal').classList.remove('show');
-  deleteTargetId = null;
+  state.deleteTarget = null;
 };
 
 window.confirmDelete = function() {
   const pw = document.getElementById('delete-pw').value;
   if (pw !== DELETE_PASSWORD) { alert('비밀번호가 틀렸어요.'); return; }
-  remove(ref(db, 'bijutsu/' + deleteTargetId));
+  const { region, id } = state.deleteTarget;
+  remove(ref(db, `bijutsu/${region}/${id}`));
   closeModal();
 };
 
@@ -283,6 +502,109 @@ document.getElementById('delete-pw').addEventListener('keydown', e => {
   if (e.key === 'Enter') confirmDelete();
   if (e.key === 'Escape') closeModal();
 });
+
+// 테마
+function renderThemeEntrySelect() {
+  const el = document.getElementById('theme-entry-select');
+  const allEntries = [
+    ...Object.values(state.entries.east).map(e => ({ ...e, region: 'east' })),
+    ...Object.values(state.entries.west).map(e => ({ ...e, region: 'west' }))
+  ].sort((a, b) => {
+    function py(y) {
+      if (!y) return 9999;
+      const s = y.toString().trim();
+      if (s.match(/^BC\s*(\d+)/i)) return -parseInt(s.match(/\d+/)[0]);
+      const cm = s.match(/(\d+)세기/);
+      if (cm) return (parseInt(cm[1]) - 1) * 100;
+      const nm = s.match(/^\d+/);
+      if (nm) return parseInt(nm[0]);
+      return 9999;
+    }
+    return py(a.year) - py(b.year);
+  });
+
+  if (!allEntries.length) { el.innerHTML = '<div class="empty">—</div>'; return; }
+
+  el.innerHTML = allEntries.map(e =>
+    `<label class="entry-select-item">
+      <input type="checkbox" value="${e.region}:${e.id}" />
+      <div class="entry-select-label">
+        <div class="entry-select-year">${e.year} ${e.region === 'east' ? '동양' : '서양'}</div>
+        <div>${e.event}</div>
+      </div>
+    </label>`
+  ).join('');
+}
+
+window.saveTheme = function() {
+  const name = document.getElementById('theme-name-input').value.trim();
+  if (!name) { alert('테마 이름을 입력해주세요.'); return; }
+  const checked = [...document.querySelectorAll('#theme-entry-select input:checked')].map(i => i.value);
+  if (!checked.length) { alert('항목을 선택해주세요.'); return; }
+  push(ref(db, 'bijutsu/themes'), { name, entries: checked });
+  document.getElementById('theme-name-input').value = '';
+  document.querySelectorAll('#theme-entry-select input').forEach(i => i.checked = false);
+  const listBtn = document.querySelector('#panel-theme .view-tab');
+  switchView('theme', 'list', listBtn);
+};
+
+function renderThemes() {
+  const el = document.getElementById('theme-blocks');
+  const themes = Object.values(state.themes);
+  if (!themes.length) { el.innerHTML = '<div class="empty">—</div>'; return; }
+
+  el.innerHTML = themes.map(t => {
+    const entryRefs = t.entries || [];
+    const entries = entryRefs.map(ref => {
+      const [region, id] = ref.split(':');
+      return state.entries[region]?.[id];
+    }).filter(Boolean).sort((a, b) => {
+      function py(y) {
+        if (!y) return 9999;
+        const s = y.toString().trim();
+        if (s.match(/^BC\s*(\d+)/i)) return -parseInt(s.match(/\d+/)[0]);
+        const cm = s.match(/(\d+)세기/);
+        if (cm) return (parseInt(cm[1]) - 1) * 100;
+        const nm = s.match(/^\d+/);
+        if (nm) return parseInt(nm[0]);
+        return 9999;
+      }
+      return py(a.year) - py(b.year);
+    });
+
+    return `<div class="theme-block">
+      <div class="theme-header" onclick="toggleTheme('${t.id}')">
+        <span class="theme-title">${t.name}</span>
+        <span class="theme-count">${entries.length}</span>
+        <span class="theme-arrow" id="theme-arrow-${t.id}">›</span>
+        <button class="theme-del" onclick="event.stopPropagation();requestDelete('themes','${t.id}')">×</button>
+      </div>
+      <div class="theme-body" id="theme-body-${t.id}">
+        <div class="timeline" style="padding: 0 1rem;">
+          ${entries.map(e => `
+            <div class="entry">
+              <div class="entry-year"><div class="year-text">${e.year || ''}</div></div>
+              <div class="entry-dot"></div>
+              <div class="entry-body">
+                <div class="entry-event">${e.event || ''}</div>
+                ${e.memo ? `<div class="entry-memo">${e.memo}</div>` : ''}
+                ${e.ref ? `<div class="entry-ref">📖 ${e.ref}</div>` : ''}
+                ${e.tags && e.tags.length ? `<div class="entry-tags">${e.tags.map(tag => `<span class="entry-tag">${tag}</span>`).join('')}</div>` : ''}
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.toggleTheme = function(id) {
+  const body = document.getElementById('theme-body-' + id);
+  const arrow = document.getElementById('theme-arrow-' + id);
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+};
+
 </script>
 </body>
 </html>
