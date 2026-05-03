@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>レフの引き出し</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --surface: #FAFAFA;
+      --border: #E8E8E8;
+      --border-dark: #C8C8C8;
+      --text: #111111;
+      --muted: #888888;
+      --faint: #DDDDDD;
+      --id: #1A5C3A;
+      --jp: #1A1A5C;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'IBM Plex Mono', monospace; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 13px; }
+
+    .header { max-width: 680px; margin: 0 auto; padding: 3rem 2rem 0; }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; letter-spacing: 3px; line-height: 1; margin-bottom: 2rem; }
+
+    .stats-line { display: flex; gap: 2rem; margin-bottom: 1.75rem; padding-bottom: 1.75rem; border-bottom: 1px solid var(--border); }
+    .stat-item { display: flex; flex-direction: column; gap: 3px; }
+    .stat-lang { font-size: 9px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+    .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 1px; line-height: 1; }
+    .stat-num.id { color: var(--id); }
+    .stat-num.jp { color: var(--jp); }
+    .stat-unit { font-size: 9px; color: var(--muted); }
+
+    .lang-tabs { display: flex; gap: 2px; margin-bottom: 2rem; }
+    .lang-tab { flex: 1; padding: 9px; border: 1px solid var(--border); border-radius: 2px; background: var(--bg); font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); cursor: pointer; text-align: center; transition: all 0.1s; letter-spacing: 1px; text-transform: uppercase; }
+    .lang-tab.active.id { color: var(--id); border-color: var(--id); }
+    .lang-tab.active.jp { color: var(--jp); border-color: var(--jp); }
+
+    main { max-width: 680px; margin: 0 auto; padding: 0 2rem 5rem; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .view-tabs { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+    .view-tab { padding: 0 0 10px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); background: none; border: none; border-bottom: 1.5px solid transparent; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; margin-bottom: -1px; transition: all 0.1s; }
+    .view-tab.active { color: var(--text); border-bottom-color: var(--text); }
+
+    .view { display: none; padding-top: 1.25rem; }
+    .view.active { display: block; }
+
+    .card { background: var(--bg); border: 1px solid var(--border); border-radius: 2px; padding: 1.25rem; margin-bottom: 8px; }
+    .field-label { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+
+    /* 그룹 타입 선택 */
+    .group-type { display: flex; gap: 2px; margin-bottom: 10px; }
+    .type-btn { flex: 1; padding: 7px; border: 1px solid var(--border); border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); background: transparent; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: all 0.1s; }
+    .type-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+    input[type=text], textarea {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid var(--border); border-radius: 2px;
+      font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+      background: var(--surface); color: var(--text);
+      outline: none; transition: border-color 0.1s; margin-bottom: 6px;
+    }
+    input[type=text]:focus, textarea:focus { border-color: var(--border-dark); background: var(--bg); }
+
+    .sentence-fields { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
+    .sentence-fields input {
+      width: 100%; padding: 10px 12px;
+      border: none; border-bottom: 1px solid var(--border);
+      font-family: 'IBM Plex Mono', monospace; font-size: 15px;
+      background: var(--surface); color: var(--text);
+      outline: none; transition: background 0.1s; margin-bottom: 0;
+    }
+    .sentence-fields input:last-child { border-bottom: none; }
+    .sentence-fields input:focus { background: var(--bg); }
+    .sentence-fields input::placeholder { color: var(--faint); font-size: 12px; }
+
+    .bulk-area { min-height: 100px; resize: vertical; font-size: 13px; line-height: 1.6; }
+    .bulk-area::placeholder { color: var(--faint); font-size: 11px; }
+    .sentence-fields input::placeholder { color: var(--faint); font-size: 11px; }
+    input[type=text]::placeholder { color: var(--faint); }
+    textarea::placeholder { color: var(--faint); }
+    .field-hint { font-size: 10px; color: var(--muted); margin-bottom: 10px; line-height: 1.6; }
+
+    .mode-toggle { display: flex; gap: 2px; margin-bottom: 10px; }
+    .mode-btn { flex: 1; padding: 7px; border: 1px solid var(--border); border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); background: transparent; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: all 0.1s; }
+    .mode-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+    .btn { width: 100%; padding: 10px; border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; cursor: pointer; transition: all 0.1s; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+    .btn-dark { background: var(--text); color: var(--bg); border: 1px solid var(--text); font-weight: 500; }
+    .btn-dark:hover { opacity: 0.75; }
+    .btn-outline { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--border-dark); color: var(--text); }
+
+    /* 그룹 목록 */
+    .group-block { border: 1px solid var(--border); border-radius: 2px; margin-bottom: 8px; overflow: hidden; }
+    .group-header { display: flex; align-items: center; padding: 12px 14px; cursor: pointer; background: var(--surface); gap: 10px; }
+    .group-header:hover { background: var(--faint); }
+    .group-title { flex: 1; font-size: 13px; font-weight: 500; }
+    .group-type-badge { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+    .group-count { font-size: 10px; color: var(--muted); }
+    .group-arrow { font-size: 10px; color: var(--muted); transition: transform 0.2s; }
+    .group-arrow.open { transform: rotate(90deg); }
+    .group-body { display: none; border-top: 1px solid var(--border); }
+    .group-body.open { display: block; }
+    .group-del { font-size: 11px; color: var(--faint); background: none; border: none; cursor: pointer; padding: 0 4px; }
+    .group-del:hover { color: var(--text); }
+
+    .sentence-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    .sentence-item:last-child { border-bottom: none; }
+    .sentence-body { flex: 1; }
+    .sentence-line1 { font-size: 16px; color: var(--text); line-height: 1.6; }
+    .sentence-line2 { font-size: 15px; color: var(--muted); line-height: 1.6; display: none; }
+    .sentence-line2.show { display: block; }
+    .sentence-actions { display: flex; gap: 4px; align-items: center; flex-shrink: 0; margin-top: 2px; }
+    .star-btn { background: none; border: none; cursor: pointer; font-size: 14px; color: var(--faint); padding: 0 2px; }
+    .star-btn.marked { color: #E8A000; }
+    .hint-btn { background: none; border: 1px solid var(--border); border-radius: 2px; cursor: pointer; font-size: 9px; color: var(--muted); padding: 2px 6px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; }
+    .hint-btn:hover { border-color: var(--border-dark); color: var(--text); }
+    .s-del { background: none; border: none; color: var(--faint); cursor: pointer; font-size: 14px; padding: 0 2px; }
+    .s-del:hover { color: var(--text); }
+
+    .empty { font-size: 10px; color: var(--muted); text-align: center; padding: 2rem 0; letter-spacing: 1px; }
+
+    /* 플래시카드 */
+    .flash-select { margin-bottom: 12px; }
+    .flash-select-label { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+    .flash-group-list { display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto; margin-bottom: 10px; }
+    .flash-group-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 2px; cursor: pointer; font-size: 12px; transition: all 0.1s; }
+    .flash-group-item.selected { border-color: var(--text); background: var(--surface); }
+    .flash-group-item input { width: 12px; height: 12px; accent-color: var(--text); cursor: pointer; }
+    .flash-mode-btns { display: flex; gap: 2px; margin-bottom: 12px; }
+    .flash-mode-btn { flex: 1; padding: 8px; border: 1px solid var(--border); border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); background: transparent; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: all 0.1s; }
+    .flash-mode-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+    .flash-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 2px; min-height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 2rem; cursor: pointer; margin-bottom: 8px; transition: border-color 0.1s; user-select: none; }
+    .flash-wrap:hover { border-color: var(--border-dark); }
+    .flash-front { font-family: 'IBM Plex Mono', monospace; font-size: 1.2rem; text-align: center; line-height: 1.7; margin-bottom: 12px; color: var(--text); }
+    .flash-tap { font-size: 9px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+    .flash-back { font-size: 1.05rem; color: var(--muted); text-align: center; margin-top: 16px; display: none; line-height: 1.7; }
+    .flash-actions { display: flex; gap: 6px; margin-bottom: 8px; }
+    .flash-actions button { flex: 1; padding: 12px; border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 18px; cursor: pointer; transition: all 0.1s; }
+    .btn-again { border: 1px solid var(--border); background: transparent; color: var(--muted); }
+    .btn-again:hover { border-color: var(--border-dark); color: var(--text); }
+    .btn-good { border: 1px solid var(--text); background: var(--text); color: var(--bg); }
+    .btn-good:hover { opacity: 0.75; }
+    .flash-counter { text-align: center; font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-bottom: 6px; }
+    .flash-star-btn { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); background: transparent; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: all 0.1s; }
+    .flash-star-btn.marked { border-color: #E8A000; color: #E8A000; }
+
+    /* 비밀번호 모달 */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999; display: none; align-items: center; justify-content: center; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: var(--bg); border: 1px solid var(--border); border-radius: 2px; padding: 1.5rem; width: 280px; }
+    .modal-title { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+    .modal input { margin-bottom: 10px; }
+    .modal-btns { display: flex; gap: 6px; }
+    .modal-btns button { flex: 1; padding: 8px; border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; }
+    .modal-cancel { border: 1px solid var(--border); background: transparent; color: var(--muted); }
+    .modal-confirm { border: 1px solid var(--text); background: var(--text); color: var(--bg); }
+
+    /* Jisho */
+    .jisho-pop { position: fixed; z-index: 9999; background: var(--text); color: var(--bg); border-radius: 2px; padding: 14px 16px; max-width: 280px; min-width: 180px; pointer-events: none; opacity: 0; transition: opacity 0.12s; }
+    .jisho-pop.visible { opacity: 1; }
+    .jisho-word { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; margin-bottom: 2px; }
+    .jisho-reading { font-size: 11px; color: #999; margin-bottom: 6px; }
+    .jisho-pos { font-size: 9px; color: #666; margin-bottom: 3px; letter-spacing: 1px; text-transform: uppercase; }
+    .jisho-sense { font-size: 12px; color: #ddd; line-height: 1.5; }
+
+    @media (max-width: 480px) {
+      .header, main { padding-left: 1rem; padding-right: 1rem; }
+      .logo { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">レフの引き出し</div>
+  <div class="stats-line">
+    <div class="stat-item">
+      <div class="stat-lang">indonesian · javanese</div>
+      <div class="stat-num id" id="count-id">0</div>
+      <div class="stat-unit">sentences</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-lang">japanese</div>
+      <div class="stat-num jp" id="count-jp">0</div>
+      <div class="stat-unit">sentences</div>
+    </div>
+  </div>
+  <div class="lang-tabs">
+    <button class="lang-tab active id" onclick="switchLang('id',this)">🇮🇩 javanese · indonesian</button>
+    <button class="lang-tab jp" onclick="switchLang('jp',this)">🇯🇵 japanese</button>
+  </div>
+</div>
+
+<main>
+  <!-- 인도네시아어/자바어 -->
+  <div class="panel active" id="panel-id">
+    <div class="view-tabs">
+      <button class="view-tab active" onclick="switchView('id','list',this)">list</button>
+      <button class="view-tab" onclick="switchView('id','add',this)">+ add</button>
+      <button class="view-tab" onclick="switchView('id','flash',this)">flash</button>
+    </div>
+
+    <!-- LIST -->
+    <div class="view active" id="id-list">
+      <div id="id-groups"><div class="empty">—</div></div>
+    </div>
+
+    <!-- ADD -->
+    <div class="view" id="id-add">
+      <div class="card">
+        <div class="field-label">group type</div>
+        <div class="group-type">
+          <button class="type-btn active" id="id-type-date" onclick="setGroupType('id','date')">📅 date</button>
+          <button class="type-btn" id="id-type-cat" onclick="setGroupType('id','cat')">📂 category</button>
+        </div>
+        <input type="text" id="id-group-name" placeholder="YYYY.MM.DD" />
+        <div class="field-label" style="margin-top:8px;">sentences</div>
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="id-mode-single" onclick="setMode('id','single')">single</button>
+          <button class="mode-btn" id="id-mode-bulk" onclick="setMode('id','bulk')">bulk paste</button>
+        </div>
+        <div id="id-single-wrap">
+          <div class="sentence-fields">
+            <input type="text" id="id-f1" placeholder="Kula remen niki kopi." />
+            <input type="text" id="id-f2" placeholder="Saya suka kopi ini." />
+          </div>
+          <button class="btn btn-dark" onclick="addSingle('id')">+ add sentence</button>
+        </div>
+        <div id="id-bulk-wrap" style="display:none;">
+          <textarea class="bulk-area" id="id-bulk" placeholder="javanese | indonesian"></textarea>
+          <div class="field-hint">자바어 | 인도네시아어 — 줄바꿈으로 구분</div>
+          <button class="btn btn-dark" onclick="addBulk('id')">+ add all</button>
+        </div>
+        <div id="id-pending-list" style="margin-top:8px;"></div>
+        <button class="btn btn-outline" onclick="saveGroup('id')" style="margin-top:4px;">save group</button>
+      </div>
+    </div>
+
+    <!-- FLASH -->
+    <div class="view" id="id-flash">
+      <div class="card" id="id-flash-select-card">
+        <div class="flash-select-label field-label">select groups</div>
+        <div class="flash-group-list" id="id-flash-group-list"></div>
+        <div class="flash-mode-btns">
+          <button class="flash-mode-btn active" id="id-fmode-all" onclick="setFlashMode('id','all')">all selected</button>
+          <button class="flash-mode-btn" id="id-fmode-star" onclick="setFlashMode('id','star')">★ only</button>
+        </div>
+        <button class="btn btn-dark" onclick="startFlash('id')">start</button>
+      </div>
+      <div id="id-flash-card" style="display:none;">
+        <div class="flash-wrap" onclick="revealCard('id')">
+          <div class="flash-front" id="id-flash-front">—</div>
+          <div class="flash-tap" id="id-flash-tap">tap to reveal</div>
+          <div class="flash-back" id="id-flash-back">—</div>
+        </div>
+        <div class="flash-actions">
+          <button class="btn-again" onclick="nextCard('id',false)">×</button>
+          <button class="btn-good" onclick="nextCard('id',true)">○</button>
+        </div>
+        <div class="flash-counter" id="id-flash-counter">0 / 0</div>
+        <button class="flash-star-btn" id="id-flash-star" onclick="toggleFlashStar('id')">★ mark</button>
+        <button class="btn btn-outline" onclick="endFlash('id')" style="margin-top:4px;">← back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 일본어 -->
+  <div class="panel" id="panel-jp">
+    <div class="view-tabs">
+      <button class="view-tab active" onclick="switchView('jp','list',this)">list</button>
+      <button class="view-tab" onclick="switchView('jp','add',this)">+ add</button>
+      <button class="view-tab" onclick="switchView('jp','flash',this)">flash</button>
+    </div>
+
+    <!-- LIST -->
+    <div class="view active" id="jp-list">
+      <div id="jp-groups"><div class="empty">—</div></div>
+    </div>
+
+    <!-- ADD -->
+    <div class="view" id="jp-add">
+      <div class="card">
+        <div class="field-label">group type</div>
+        <div class="group-type">
+          <button class="type-btn active" id="jp-type-date" onclick="setGroupType('jp','date')">📅 date</button>
+          <button class="type-btn" id="jp-type-cat" onclick="setGroupType('jp','cat')">📂 category</button>
+        </div>
+        <input type="text" id="jp-group-name" placeholder="YYYY.MM.DD" />
+        <div class="field-label" style="margin-top:8px;">sentences</div>
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="jp-mode-single" onclick="setMode('jp','single')">single</button>
+          <button class="mode-btn" id="jp-mode-bulk" onclick="setMode('jp','bulk')">bulk paste</button>
+        </div>
+        <div id="jp-single-wrap">
+          <div class="sentence-fields">
+            <input type="text" id="jp-f1" placeholder="切符をなくしてしまいました。" />
+            <input type="text" id="jp-f2" placeholder="切符(きっぷ)をなくしてしまいました。" />
+          </div>
+          <button class="btn btn-dark" onclick="addSingle('jp')">+ add sentence</button>
+        </div>
+        <div id="jp-bulk-wrap" style="display:none;">
+          <textarea class="bulk-area" id="jp-bulk" placeholder="kanji | furigana"></textarea>
+          <div class="field-hint">한자 | 후리가나 — 줄바꿈으로 구분</div>
+          <button class="btn btn-dark" onclick="addBulk('jp')">+ add all</button>
+        </div>
+        <div id="jp-pending-list" style="margin-top:8px;"></div>
+        <button class="btn btn-outline" onclick="saveGroup('jp')" style="margin-top:4px;">save group</button>
+      </div>
+    </div>
+
+    <!-- FLASH -->
+    <div class="view" id="jp-flash">
+      <div class="card" id="jp-flash-select-card">
+        <div class="flash-select-label field-label">select groups</div>
+        <div class="flash-group-list" id="jp-flash-group-list"></div>
+        <div class="flash-mode-btns">
+          <button class="flash-mode-btn active" id="jp-fmode-all" onclick="setFlashMode('jp','all')">all selected</button>
+          <button class="flash-mode-btn" id="jp-fmode-star" onclick="setFlashMode('jp','star')">★ only</button>
+        </div>
+        <button class="btn btn-dark" onclick="startFlash('jp')">start</button>
+      </div>
+      <div id="jp-flash-card" style="display:none;">
+        <div class="flash-wrap" onclick="revealCard('jp')">
+          <div class="flash-front" id="jp-flash-front">—</div>
+          <div class="flash-tap" id="jp-flash-tap">tap to reveal</div>
+          <div class="flash-back" id="jp-flash-back">—</div>
+        </div>
+        <div class="flash-actions">
+          <button class="btn-again" onclick="nextCard('jp',false)">×</button>
+          <button class="btn-good" onclick="nextCard('jp',true)">○</button>
+        </div>
+        <div class="flash-counter" id="jp-flash-counter">0 / 0</div>
+        <button class="flash-star-btn" id="jp-flash-star" onclick="toggleFlashStar('jp')">★ mark</button>
+        <button class="btn btn-outline" onclick="endFlash('jp')" style="margin-top:4px;">← back</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 삭제 확인 모달 -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal">
+    <div class="modal-title">enter password to delete</div>
+    <input type="password" id="delete-pw-input" placeholder="password" />
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">cancel</button>
+      <button class="modal-confirm" onclick="confirmDelete()">delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Jisho -->
+<div class="jisho-pop" id="jisho-pop">
+  <div class="jisho-word" id="j-word"></div>
+  <div class="jisho-reading" id="j-reading"></div>
+  <div class="jisho-pos" id="j-pos"></div>
+  <div class="jisho-sense" id="j-sense"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const DELETE_PASSWORD = "1204";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDGR_H5irToWUMDmjpvgBxJCXHYmg5PUp8",
+  authDomain: "lef-hikidashi.firebaseapp.com",
+  databaseURL: "https://lef-hikidashi-default-rtdb.firebaseio.com",
+  projectId: "lef-hikidashi",
+  storageBucket: "lef-hikidashi.firebasestorage.app",
+  messagingSenderId: "126400912407",
+  appId: "1:126400912407:web:279886a9764897f2ad9052"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const state = {
+  groups: { id: {}, jp: {} },
+  pending: { id: [], jp: [] },
+  groupType: { id: 'date', jp: 'date' },
+  flashMode: { id: 'all', jp: 'all' },
+  flashQueue: { id: [], jp: [] },
+  flashIdx: { id: 0, jp: 0 },
+  flashRevealed: { id: false, jp: false },
+  deleteTarget: null
+};
+
+// Firebase 동기화
+function setupSync(lang) {
+  onValue(ref(db, 'groups/' + lang), snap => {
+    state.groups[lang] = {};
+    snap.forEach(child => {
+      state.groups[lang][child.key] = { id: child.key, ...child.val() };
+    });
+    renderGroups(lang);
+    renderFlashGroupList(lang);
+    updateStats(lang);
+  });
+}
+setupSync('id');
+setupSync('jp');
+
+// 탭 전환
+window.switchLang = function(lang, btn) {
+  document.querySelectorAll('.lang-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + lang).classList.add('active');
+};
+
+window.switchView = function(lang, view, btn) {
+  const panel = document.getElementById('panel-' + lang);
+  panel.querySelectorAll('.view-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  panel.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(lang + '-' + view).classList.add('active');
+  if (view === 'flash') renderFlashGroupList(lang);
+};
+
+// 그룹 타입
+window.setGroupType = function(lang, type) {
+  state.groupType[lang] = type;
+  document.getElementById(lang + '-type-date').classList.toggle('active', type === 'date');
+  document.getElementById(lang + '-type-cat').classList.toggle('active', type === 'cat');
+  const input = document.getElementById(lang + '-group-name');
+  input.placeholder = type === 'date' ? 'YYYY.MM.DD' : '';
+};
+
+// 입력 모드
+window.setMode = function(lang, mode) {
+  document.getElementById(lang + '-mode-single').classList.toggle('active', mode === 'single');
+  document.getElementById(lang + '-mode-bulk').classList.toggle('active', mode === 'bulk');
+  document.getElementById(lang + '-single-wrap').style.display = mode === 'single' ? 'block' : 'none';
+  document.getElementById(lang + '-bulk-wrap').style.display = mode === 'bulk' ? 'block' : 'none';
+};
+
+// 단일 추가 (pending)
+window.addSingle = function(lang) {
+  const f1 = document.getElementById(lang + '-f1').value.trim();
+  const f2 = document.getElementById(lang + '-f2').value.trim();
+  if (!f1) return;
+  state.pending[lang].push({ line1: f1, line2: f2, starred: false });
+  document.getElementById(lang + '-f1').value = '';
+  document.getElementById(lang + '-f2').value = '';
+  document.getElementById(lang + '-f1').focus();
+  renderPending(lang);
+};
+
+// bulk 추가 (pending)
+window.addBulk = function(lang) {
+  const area = document.getElementById(lang + '-bulk');
+  const lines = area.value.split('\n').map(l => l.trim()).filter(Boolean);
+  lines.forEach(line => {
+    const parts = line.split('|').map(p => p.trim());
+    state.pending[lang].push({ line1: parts[0] || '', line2: parts[1] || '', starred: false });
+  });
+  area.value = '';
+  renderPending(lang);
+};
+
+function renderPending(lang) {
+  const el = document.getElementById(lang + '-pending-list');
+  if (!state.pending[lang].length) { el.innerHTML = ''; return; }
+  el.innerHTML = state.pending[lang].map((s, i) => `
+    <div style="padding:8px 0; border-bottom:1px solid var(--border); font-size:14px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+      <div>
+        <div style="color:var(--text);">${s.line1}</div>
+        ${s.line2 ? `<div style="color:var(--muted); font-size:13px;">${s.line2}</div>` : ''}
+      </div>
+      <button onclick="removePending('${lang}',${i})" style="background:none;border:none;color:var(--faint);cursor:pointer;font-size:14px;">×</button>
+    </div>`).join('');
+}
+
+window.removePending = function(lang, i) {
+  state.pending[lang].splice(i, 1);
+  renderPending(lang);
+};
+
+// 그룹 저장 — 같은 이름이면 기존 그룹에 합치기
+window.saveGroup = function(lang) {
+  const name = document.getElementById(lang + '-group-name').value.trim();
+  if (!name) { alert('그룹 이름을 입력해주세요.'); return; }
+  if (!state.pending[lang].length) { alert('문장을 추가해주세요.'); return; }
+
+  const existing = Object.values(state.groups[lang]).find(g => g.name === name);
+
+  if (existing) {
+    const sentences = [...(existing.sentences || []), ...state.pending[lang]];
+    update(ref(db, 'groups/' + lang + '/' + existing.id), { sentences });
+  } else {
+    const groupData = {
+      name,
+      type: state.groupType[lang],
+      sentences: state.pending[lang],
+      createdAt: new Date().toISOString()
+    };
+    push(ref(db, 'groups/' + lang), groupData);
+  }
+
+  state.pending[lang] = [];
+  document.getElementById(lang + '-group-name').value = '';
+  renderPending(lang);
+  const listBtn = document.querySelector('#panel-' + lang + ' .view-tab');
+  switchView(lang, 'list', listBtn);
+};
+
+// 그룹 렌더
+function renderGroups(lang) {
+  const el = document.getElementById(lang + '-groups');
+  const groups = Object.values(state.groups[lang]);
+  if (!groups.length) { el.innerHTML = '<div class="empty">—</div>'; return; }
+
+  // 날짜순 정렬
+  groups.sort((a, b) => a.name > b.name ? 1 : -1);
+
+  el.innerHTML = groups.map(g => {
+    const sentences = g.sentences || [];
+    const starredCount = sentences.filter(s => s.starred).length;
+    return `
+    <div class="group-block">
+      <div class="group-header" onclick="toggleGroup('${g.id}')">
+        <span class="group-type-badge">${g.type === 'date' ? '📅' : '📂'}</span>
+        <span class="group-title">${g.name}</span>
+        ${starredCount ? `<span style="font-size:11px;color:#E8A000;">★${starredCount}</span>` : ''}
+        <span class="group-count">${sentences.length}</span>
+        <span class="group-arrow" id="arrow-${g.id}">›</span>
+        <button class="group-del" onclick="event.stopPropagation();requestDelete('group','${lang}','${g.id}')">×</button>
+      </div>
+      <div class="group-body" id="body-${g.id}">
+        ${sentences.map((s, si) => `
+        <div class="sentence-item">
+          <div class="sentence-body">
+            <div class="sentence-line1">${s.line1}</div>
+            ${s.line2 ? `<div class="sentence-line2 ${s.line2 ? '' : ''}" id="hint-${g.id}-${si}">${s.line2}</div>` : ''}
+          </div>
+          <div class="sentence-actions">
+            ${s.line2 ? `<button class="hint-btn" onclick="toggleHint('${g.id}',${si})">ひ</button>` : ''}
+            <button class="star-btn ${s.starred ? 'marked' : ''}" onclick="toggleStar('${lang}','${g.id}',${si})">★</button>
+            <button class="s-del" onclick="requestDelete('sentence','${lang}','${g.id}',${si})">×</button>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.toggleGroup = function(gid) {
+  const body = document.getElementById('body-' + gid);
+  const arrow = document.getElementById('arrow-' + gid);
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+};
+
+window.toggleHint = function(gid, si) {
+  const el = document.getElementById(`hint-${gid}-${si}`);
+  if (el) el.classList.toggle('show');
+};
+
+window.toggleStar = function(lang, gid, si) {
+  const group = state.groups[lang][gid];
+  if (!group) return;
+  const sentences = [...(group.sentences || [])];
+  sentences[si].starred = !sentences[si].starred;
+  update(ref(db, `groups/${lang}/${gid}`), { sentences });
+};
+
+// 삭제 (비밀번호)
+window.requestDelete = function(type, lang, gid, si) {
+  state.deleteTarget = { type, lang, gid, si };
+  document.getElementById('delete-pw-input').value = '';
+  document.getElementById('delete-modal').classList.add('show');
+  setTimeout(() => document.getElementById('delete-pw-input').focus(), 100);
+};
+
+window.closeModal = function() {
+  document.getElementById('delete-modal').classList.remove('show');
+  state.deleteTarget = null;
+};
+
+window.confirmDelete = function() {
+  const pw = document.getElementById('delete-pw-input').value;
+  if (pw !== DELETE_PASSWORD) { alert('비밀번호가 틀렸어요.'); return; }
+  const { type, lang, gid, si } = state.deleteTarget;
+  if (type === 'group') {
+    remove(ref(db, `groups/${lang}/${gid}`));
+  } else {
+    const group = state.groups[lang][gid];
+    const sentences = [...(group.sentences || [])];
+    sentences.splice(si, 1);
+    update(ref(db, `groups/${lang}/${gid}`), { sentences });
+  }
+  closeModal();
+};
+
+// 플래시카드
+function renderFlashGroupList(lang) {
+  const el = document.getElementById(lang + '-flash-group-list');
+  const groups = Object.values(state.groups[lang]);
+  if (!groups.length) { el.innerHTML = '<div class="empty">—</div>'; return; }
+  groups.sort((a, b) => a.name > b.name ? 1 : -1);
+  el.innerHTML = groups.map(g => {
+    const count = (g.sentences || []).length;
+    const starCount = (g.sentences || []).filter(s => s.starred).length;
+    return `<label class="flash-group-item">
+      <input type="checkbox" value="${g.id}" />
+      <span style="flex:1;">${g.type === 'date' ? '📅' : '📂'} ${g.name}</span>
+      ${starCount ? `<span style="font-size:11px;color:#E8A000;">★${starCount}</span>` : ''}
+      <span style="font-size:10px;color:var(--muted);">${count}</span>
+    </label>`;
+  }).join('');
+}
+
+window.setFlashMode = function(lang, mode) {
+  state.flashMode[lang] = mode;
+  document.getElementById(lang + '-fmode-all').classList.toggle('active', mode === 'all');
+  document.getElementById(lang + '-fmode-star').classList.toggle('active', mode === 'star');
+};
+
+window.startFlash = function(lang) {
+  const checked = [...document.querySelectorAll(`#${lang}-flash-group-list input:checked`)].map(i => i.value);
+  if (!checked.length) { alert('그룹을 선택해주세요.'); return; }
+
+  let sentences = [];
+  checked.forEach(gid => {
+    const g = state.groups[lang][gid];
+    if (g && g.sentences) {
+      g.sentences.forEach((s, si) => {
+        if (state.flashMode[lang] === 'star' && !s.starred) return;
+        sentences.push({ ...s, gid, si });
+      });
+    }
+  });
+
+  if (!sentences.length) { alert('선택한 조건에 맞는 문장이 없어요.'); return; }
+
+  // 셔플
+  for (let i = sentences.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [sentences[i], sentences[j]] = [sentences[j], sentences[i]];
+  }
+
+  state.flashQueue[lang] = sentences;
+  state.flashIdx[lang] = 0;
+  state.flashRevealed[lang] = false;
+
+  document.getElementById(lang + '-flash-select-card').style.display = 'none';
+  document.getElementById(lang + '-flash-card').style.display = 'block';
+  showCard(lang);
+};
+
+function showCard(lang) {
+  const queue = state.flashQueue[lang];
+  const idx = state.flashIdx[lang];
+  if (idx >= queue.length) {
+    endFlash(lang);
+    return;
+  }
+  const s = queue[idx];
+  document.getElementById(lang + '-flash-front').textContent = s.line1;
+  const back = document.getElementById(lang + '-flash-back');
+  back.style.display = 'none';
+  back.textContent = s.line2 || s.line1;
+  document.getElementById(lang + '-flash-tap').textContent = s.line2 ? 'tap to reveal' : 'tap to confirm';
+  document.getElementById(lang + '-flash-counter').textContent = (idx + 1) + ' / ' + queue.length;
+  const starBtn = document.getElementById(lang + '-flash-star');
+  starBtn.classList.toggle('marked', !!s.starred);
+  starBtn.textContent = s.starred ? '★ marked' : '★ mark';
+  state.flashRevealed[lang] = false;
+}
+
+window.revealCard = function(lang) {
+  if (state.flashRevealed[lang]) return;
+  document.getElementById(lang + '-flash-back').style.display = 'block';
+  state.flashRevealed[lang] = true;
+};
+
+window.nextCard = function(lang, good) {
+  if (!state.flashRevealed[lang]) { revealCard(lang); return; }
+  state.flashIdx[lang]++;
+  showCard(lang);
+};
+
+window.toggleFlashStar = function(lang) {
+  const idx = state.flashIdx[lang];
+  const s = state.flashQueue[lang][idx];
+  if (!s) return;
+  s.starred = !s.starred;
+  const group = state.groups[lang][s.gid];
+  if (group && group.sentences) {
+    const sentences = [...group.sentences];
+    sentences[s.si].starred = s.starred;
+    update(ref(db, `groups/${lang}/${s.gid}`), { sentences });
+  }
+  const starBtn = document.getElementById(lang + '-flash-star');
+  starBtn.classList.toggle('marked', s.starred);
+  starBtn.textContent = s.starred ? '★ marked' : '★ mark';
+};
+
+window.endFlash = function(lang) {
+  document.getElementById(lang + '-flash-select-card').style.display = 'block';
+  document.getElementById(lang + '-flash-card').style.display = 'none';
+};
+
+// 통계
+function updateStats(lang) {
+  let total = 0;
+  Object.values(state.groups[lang]).forEach(g => {
+    total += (g.sentences || []).length;
+  });
+  document.getElementById('count-' + lang).textContent = total;
+}
+
+// Tab 키
+document.getElementById('id-f1').addEventListener('keydown', e => { if (e.key === 'Tab') { e.preventDefault(); document.getElementById('id-f2').focus(); } if (e.key === 'Enter') addSingle('id'); });
+document.getElementById('id-f2').addEventListener('keydown', e => { if (e.key === 'Tab') { e.preventDefault(); document.getElementById('id-f1').focus(); } if (e.key === 'Enter') addSingle('id'); });
+document.getElementById('jp-f1').addEventListener('keydown', e => { if (e.key === 'Tab') { e.preventDefault(); document.getElementById('jp-f2').focus(); } if (e.key === 'Enter') addSingle('jp'); });
+document.getElementById('jp-f2').addEventListener('keydown', e => { if (e.key === 'Tab') { e.preventDefault(); document.getElementById('jp-f1').focus(); } if (e.key === 'Enter') addSingle('jp'); });
+document.getElementById('delete-pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') confirmDelete(); if (e.key === 'Escape') closeModal(); });
+
+// Jisho
+const pop = document.getElementById('jisho-pop');
+let hideTimer = null;
+document.addEventListener('mouseup', async () => {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed) return;
+  const text = sel.toString().trim();
+  if (!text || text.length > 10) return;
+  if (!/[\u3000-\u9FFF\uF900-\uFAFF]/.test(text)) return;
+  const range = sel.getRangeAt(0);
+  const rect = range.getBoundingClientRect();
+  try {
+    const res = await fetch(`https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(text)}`);
+    const data = await res.json();
+    const entry = data.data && data.data[0];
+    if (!entry) return;
+    const word = entry.japanese[0].word || entry.japanese[0].reading || text;
+    const reading = entry.japanese[0].reading || '';
+    const sense = entry.senses[0];
+    document.getElementById('j-word').textContent = word;
+    document.getElementById('j-reading').textContent = reading !== word ? reading : '';
+    document.getElementById('j-pos').textContent = (sense.parts_of_speech || []).join(', ');
+    document.getElementById('j-sense').textContent = (sense.english_definitions || []).slice(0, 3).join(', ');
+    const x = Math.min(rect.left + window.scrollX, window.innerWidth - 300);
+    pop.style.left = x + 'px';
+    pop.style.top = (rect.top + window.scrollY - 120) + 'px';
+    pop.classList.add('visible');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => pop.classList.remove('visible'), 3500);
+  } catch(e) {}
+});
+document.addEventListener('mousedown', e => {
+  if (!e.target.closest('#delete-modal')) pop.classList.remove('visible');
+});
+
+</script>
+</body>
+</html>

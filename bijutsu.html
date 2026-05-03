@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>美術史の引き出し</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --surface: #FAFAFA;
+      --border: #E8E8E8;
+      --border-dark: #C8C8C8;
+      --text: #111111;
+      --muted: #888888;
+      --faint: #DDDDDD;
+      --accent: #8B6914;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'IBM Plex Mono', monospace; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 13px; }
+
+    .header { max-width: 680px; margin: 0 auto; padding: 3rem 2rem 0; }
+    .back { font-size: 10px; color: var(--muted); text-decoration: none; letter-spacing: 1px; text-transform: uppercase; display: inline-block; margin-bottom: 1.5rem; }
+    .back:hover { color: var(--text); }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; letter-spacing: 3px; line-height: 1; margin-bottom: 0.25rem; }
+    .logo-accent { color: var(--accent); }
+    .count-line { font-size: 10px; color: var(--muted); margin-bottom: 2rem; letter-spacing: 0.5px; }
+
+    main { max-width: 680px; margin: 0 auto; padding: 0 2rem 5rem; }
+
+    .view-tabs { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+    .view-tab { padding: 0 0 10px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); background: none; border: none; border-bottom: 1.5px solid transparent; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; margin-bottom: -1px; transition: all 0.1s; }
+    .view-tab.active { color: var(--text); border-bottom-color: var(--text); }
+
+    .view { display: none; padding-top: 1.25rem; }
+    .view.active { display: block; }
+
+    .card { background: var(--bg); border: 1px solid var(--border); border-radius: 2px; padding: 1.25rem; margin-bottom: 8px; }
+    .field-label { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+
+    input[type=text], textarea {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid var(--border); border-radius: 2px;
+      font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+      background: var(--surface); color: var(--text);
+      outline: none; transition: border-color 0.1s; margin-bottom: 6px;
+    }
+    input[type=text]:focus, textarea:focus { border-color: var(--border-dark); background: var(--bg); }
+    textarea { min-height: 70px; resize: vertical; }
+    input[type=text]::placeholder, textarea::placeholder { color: var(--faint); }
+
+    .tag-input-wrap { margin-bottom: 6px; }
+    .tag-input-wrap input { margin-bottom: 4px; }
+    .tag-hint { font-size: 10px; color: var(--muted); margin-bottom: 10px; }
+
+    .btn { width: 100%; padding: 10px; border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; cursor: pointer; transition: all 0.1s; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+    .btn-dark { background: var(--text); color: var(--bg); border: 1px solid var(--text); font-weight: 500; }
+    .btn-dark:hover { opacity: 0.75; }
+
+    /* 검색/필터 */
+    .search-bar { display: flex; gap: 6px; margin-bottom: 12px; }
+    .search-bar input { flex: 1; margin-bottom: 0; }
+    .search-bar input:focus { border-color: var(--border-dark); }
+
+    .tag-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .tag-filter { padding: 4px 10px; border: 1px solid var(--border); border-radius: 99px; font-size: 10px; color: var(--muted); background: transparent; cursor: pointer; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; transition: all 0.1s; }
+    .tag-filter.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+    /* 연표 */
+    .timeline { position: relative; }
+    .timeline::before { content: ''; position: absolute; left: 52px; top: 0; bottom: 0; width: 1px; background: var(--border); }
+
+    .entry { display: flex; gap: 0; margin-bottom: 0; position: relative; }
+    .entry-year { width: 52px; flex-shrink: 0; padding: 14px 12px 14px 0; text-align: right; }
+    .year-text { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 1px; color: var(--accent); line-height: 1; }
+    .entry-dot { width: 12px; flex-shrink: 0; display: flex; align-items: flex-start; padding-top: 17px; }
+    .entry-dot::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-left: 0; border: 1.5px solid var(--bg); outline: 1px solid var(--accent); }
+    .entry-body { flex: 1; padding: 12px 0 12px 14px; border-bottom: 1px solid var(--border); }
+    .entry:last-child .entry-body { border-bottom: none; }
+    .entry-event { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 4px; }
+    .entry-memo { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 6px; }
+    .entry-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .entry-tag { font-size: 9px; padding: 2px 8px; border: 1px solid var(--faint); border-radius: 99px; color: var(--muted); letter-spacing: 0.5px; }
+    .entry-actions { display: flex; gap: 8px; margin-top: 6px; }
+    .entry-del { font-size: 10px; color: var(--faint); background: none; border: none; cursor: pointer; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; padding: 0; }
+    .entry-del:hover { color: var(--text); }
+
+    .empty { font-size: 10px; color: var(--muted); text-align: center; padding: 3rem 0; letter-spacing: 1px; }
+
+    /* 삭제 모달 */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999; display: none; align-items: center; justify-content: center; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: var(--bg); border: 1px solid var(--border); border-radius: 2px; padding: 1.5rem; width: 280px; }
+    .modal-title { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+    .modal input { margin-bottom: 10px; }
+    .modal-btns { display: flex; gap: 6px; }
+    .modal-btns button { flex: 1; padding: 8px; border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; }
+    .modal-cancel { border: 1px solid var(--border); background: transparent; color: var(--muted); }
+    .modal-confirm { border: 1px solid var(--text); background: var(--text); color: var(--bg); }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back" href="./index.html">← 서랍장으로</a>
+  <div class="logo">美術史<span class="logo-accent">の</span>引き出し</div>
+  <div class="count-line" id="count-line">0 entries</div>
+</div>
+
+<main>
+  <div class="view-tabs">
+    <button class="view-tab active" onclick="switchView('list', this)">연표</button>
+    <button class="view-tab" onclick="switchView('add', this)">+ add</button>
+  </div>
+
+  <!-- 연표 -->
+  <div class="view active" id="view-list">
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="키워드 검색..." oninput="renderTimeline()" />
+    </div>
+    <div class="tag-filters" id="tag-filters"></div>
+    <div class="timeline" id="timeline">
+      <div class="empty">—</div>
+    </div>
+  </div>
+
+  <!-- 추가 -->
+  <div class="view" id="view-add">
+    <div class="card">
+      <div class="field-label">연도</div>
+      <input type="text" id="input-year" placeholder="1922" />
+      <div class="field-label">사건</div>
+      <input type="text" id="input-event" placeholder="조선미술전람회 개최" />
+      <div class="field-label">메모 (맥락/의미)</div>
+      <textarea id="input-memo" placeholder="&quot;동양화&quot;가 제도적 범주로 정착"></textarea>
+      <div class="field-label">키워드 태그</div>
+      <input type="text" id="input-tags" placeholder="제도, 용어, 인물" />
+      <div class="tag-hint">쉼표로 구분</div>
+      <button class="btn btn-dark" onclick="addEntry()">+ add</button>
+    </div>
+  </div>
+</main>
+
+<!-- 삭제 모달 -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal">
+    <div class="modal-title">enter password to delete</div>
+    <input type="password" id="delete-pw" placeholder="password" />
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">cancel</button>
+      <button class="modal-confirm" onclick="confirmDelete()">delete</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const DELETE_PASSWORD = "1204";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDGR_H5irToWUMDmjpvgBxJCXHYmg5PUp8",
+  authDomain: "lef-hikidashi.firebaseapp.com",
+  databaseURL: "https://lef-hikidashi-default-rtdb.firebaseio.com",
+  projectId: "lef-hikidashi",
+  storageBucket: "lef-hikidashi.firebasestorage.app",
+  messagingSenderId: "126400912407",
+  appId: "1:126400912407:web:279886a9764897f2ad9052"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let entries = [];
+let activeTag = null;
+let deleteTargetId = null;
+
+onValue(ref(db, 'bijutsu'), snap => {
+  entries = [];
+  snap.forEach(child => {
+    entries.push({ id: child.key, ...child.val() });
+  });
+  entries.sort((a, b) => (a.year || '').localeCompare(b.year || ''));
+  renderTimeline();
+  renderTagFilters();
+  updateCount();
+});
+
+window.switchView = function(view, btn) {
+  document.querySelectorAll('.view-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+};
+
+window.addEntry = function() {
+  const year = document.getElementById('input-year').value.trim();
+  const event = document.getElementById('input-event').value.trim();
+  const memo = document.getElementById('input-memo').value.trim();
+  const tagsRaw = document.getElementById('input-tags').value.trim();
+  if (!year || !event) { alert('연도와 사건은 필수예요.'); return; }
+  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+  push(ref(db, 'bijutsu'), { year, event, memo, tags });
+  document.getElementById('input-year').value = '';
+  document.getElementById('input-event').value = '';
+  document.getElementById('input-memo').value = '';
+  document.getElementById('input-tags').value = '';
+  const listBtn = document.querySelector('.view-tab');
+  switchView('list', listBtn);
+};
+
+function renderTimeline() {
+  const el = document.getElementById('timeline');
+  const query = document.getElementById('search-input').value.toLowerCase();
+
+  let filtered = entries.filter(e => {
+    const matchTag = !activeTag || (e.tags && e.tags.includes(activeTag));
+    const matchQuery = !query ||
+      (e.year && e.year.includes(query)) ||
+      (e.event && e.event.toLowerCase().includes(query)) ||
+      (e.memo && e.memo.toLowerCase().includes(query)) ||
+      (e.tags && e.tags.some(t => t.toLowerCase().includes(query)));
+    return matchTag && matchQuery;
+  });
+
+  if (!filtered.length) { el.innerHTML = '<div class="empty">—</div>'; return; }
+
+  el.innerHTML = filtered.map(e => `
+    <div class="entry">
+      <div class="entry-year"><div class="year-text">${e.year}</div></div>
+      <div class="entry-dot"></div>
+      <div class="entry-body">
+        <div class="entry-event">${e.event}</div>
+        ${e.memo ? `<div class="entry-memo">${e.memo}</div>` : ''}
+        ${e.tags && e.tags.length ? `<div class="entry-tags">${e.tags.map(t => `<span class="entry-tag">${t}</span>`).join('')}</div>` : ''}
+        <div class="entry-actions">
+          <button class="entry-del" onclick="requestDelete('${e.id}')">× 삭제</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderTagFilters() {
+  const allTags = [...new Set(entries.flatMap(e => e.tags || []))].sort();
+  const el = document.getElementById('tag-filters');
+  if (!allTags.length) { el.innerHTML = ''; return; }
+  el.innerHTML = allTags.map(t =>
+    `<button class="tag-filter ${activeTag === t ? 'active' : ''}" onclick="filterByTag('${t}')">${t}</button>`
+  ).join('');
+}
+
+window.filterByTag = function(tag) {
+  activeTag = activeTag === tag ? null : tag;
+  renderTimeline();
+  renderTagFilters();
+};
+
+function updateCount() {
+  document.getElementById('count-line').textContent = entries.length + ' entries';
+}
+
+window.requestDelete = function(id) {
+  deleteTargetId = id;
+  document.getElementById('delete-pw').value = '';
+  document.getElementById('delete-modal').classList.add('show');
+  setTimeout(() => document.getElementById('delete-pw').focus(), 100);
+};
+
+window.closeModal = function() {
+  document.getElementById('delete-modal').classList.remove('show');
+  deleteTargetId = null;
+};
+
+window.confirmDelete = function() {
+  const pw = document.getElementById('delete-pw').value;
+  if (pw !== DELETE_PASSWORD) { alert('비밀번호가 틀렸어요.'); return; }
+  remove(ref(db, 'bijutsu/' + deleteTargetId));
+  closeModal();
+};
+
+document.getElementById('delete-pw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmDelete();
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+</body>
+</html>

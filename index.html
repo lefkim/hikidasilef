@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>レフの引き出し</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'IBM Plex Mono', monospace;
+      background: #FFFFFF;
+      color: #111111;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.2rem;
+      letter-spacing: 3px;
+      margin-bottom: 0.25rem;
+      text-align: center;
+    }
+
+    .subtitle {
+      font-size: 9px;
+      color: #888888;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 3rem;
+      text-align: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .item {
+      border: 1px solid #E8E8E8;
+      padding: 1.5rem 1rem;
+      text-decoration: none;
+      color: #111111;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: border-color 0.1s;
+      min-height: 100px;
+    }
+
+    .item:hover { border-color: #111111; }
+
+    .item.empty { cursor: default; }
+    .item.empty:hover { border-color: #E8E8E8; }
+
+    .item-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    .item.empty .item-title { color: #DDDDDD; }
+
+    .footer {
+      margin-top: 2.5rem;
+      font-size: 9px;
+      color: #CCCCCC;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo">レフの引き出し</div>
+  <div class="subtitle">lef no hikidashi</div>
+
+  <div class="grid">
+    <a class="item" href="./kotoba.html">
+      <div class="item-title">言葉</div>
+    </a>
+    <a class="item" href="./bijutsu.html">
+      <div class="item-title">美術史</div>
+    </a>
+    <div class="item empty"><div class="item-title">—</div></div>
+    <div class="item empty"><div class="item-title">—</div></div>
+    <div class="item empty"><div class="item-title">—</div></div>
+    <div class="item empty"><div class="item-title">—</div></div>
+  </div>
+
+  <div class="footer">折れても、また言葉を拾う。</div>
+
+</body>
+</html>
