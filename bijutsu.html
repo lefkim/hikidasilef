@@ -44,9 +44,6 @@
 
     /* 국가 탭 (동양만) */
     .country-tabs { display: flex; gap: 6px; margin-bottom: 1rem; }
-    .country-tab { padding: 5px 14px; border: 1px solid var(--border); border-radius: 99px; font-size: 11px; color: var(--muted); background: transparent; cursor: pointer; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; transition: all 0.1s; }
-    .country-tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
-
     /* 검색 */
     .search-bar { margin-bottom: 10px; }
     .search-bar input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; background: var(--surface); color: var(--text); outline: none; }
@@ -166,12 +163,7 @@
     </div>
 
     <div class="view active" id="east-timeline">
-      <div class="country-tabs" id="east-country-tabs">
-        <button class="country-tab active" onclick="switchCountry('east','all',this)">전체</button>
-        <button class="country-tab" onclick="switchCountry('east','china',this)">중국</button>
-        <button class="country-tab" onclick="switchCountry('east','korea',this)">한국</button>
-        <button class="country-tab" onclick="switchCountry('east','japan',this)">일본</button>
-      </div>
+
       <div class="search-bar"><input type="text" id="east-search" placeholder="키워드 검색..." oninput="renderTimeline('east')" /></div>
       <div class="tag-filters" id="east-tag-filters"></div>
       <div class="timeline" id="east-timeline-list"><div class="empty">—</div></div>
@@ -179,13 +171,7 @@
 
     <div class="view" id="east-add">
       <div class="card">
-        <div class="field-label">국가</div>
-        <select id="east-country">
-          <option value="china">중국</option>
-          <option value="korea">한국</option>
-          <option value="japan">일본</option>
-          <option value="other">기타</option>
-        </select>
+
         <div class="field-label">연도 / 시대</div>
         <input type="text" id="east-year" placeholder="BC 221 / 14세기 / 1922" />
         <div class="field-label">사건 / 내용</div>
@@ -292,7 +278,6 @@ const db = getDatabase(app);
 const state = {
   entries: { east: {}, west: {} },
   themes: {},
-  activeCountry: { east: 'all' },
   activeTag: { east: null, west: null },
   editingId: { east: null, west: null },
   deleteTarget: null
@@ -340,25 +325,15 @@ window.switchView = function(region, view, btn) {
   document.getElementById(region + '-' + view).classList.add('active');
 };
 
-window.switchCountry = function(region, country, btn) {
-  state.activeCountry[region] = country;
-  document.querySelectorAll('#east-country-tabs .country-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTimeline(region);
-};
+
 
 // 연표 렌더
 function renderTimeline(region) {
   const el = document.getElementById(region + '-timeline-list');
   const query = (document.getElementById(region + '-search')?.value || '').toLowerCase();
   const activeTag = state.activeTag[region];
-  const activeCountry = state.activeCountry[region] || 'all';
 
   let entries = Object.values(state.entries[region]);
-
-  if (region === 'east' && activeCountry !== 'all') {
-    entries = entries.filter(e => e.country === activeCountry);
-  }
 
   if (activeTag) entries = entries.filter(e => e.tags && e.tags.includes(activeTag));
 
@@ -387,7 +362,7 @@ function renderTimeline(region) {
 
   el.innerHTML = entries.map(e => `
     <div class="entry">
-      <div class="entry-year"><div class="year-text ${region}">${e.year || ''}</div>${e.country ? `<div style="font-size:9px;color:var(--muted);">${e.country === 'china' ? '중국' : e.country === 'korea' ? '한국' : e.country === 'japan' ? '일본' : ''}</div>` : ''}</div>
+      <div class="entry-year"><div class="year-text ${region}">${e.year || ''}</div></div>
       <div class="entry-dot"></div>
       <div class="entry-body">
         <div class="entry-event">${e.event || ''}</div>
@@ -434,7 +409,6 @@ window.submitEntry = function(region) {
   if (!year || !event) { alert('연도와 사건은 필수예요.'); return; }
   const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
   const data = { year, event, memo, ref: refVal, tags };
-  if (region === 'east') data.country = document.getElementById('east-country').value;
 
   if (state.editingId[region]) {
     update(ref(db, `bijutsu/${region}/${state.editingId[region]}`), data);
